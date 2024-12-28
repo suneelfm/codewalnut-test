@@ -38,13 +38,15 @@ const timerSlice = createSlice({
         setTimer(state.timers as Partial<Timer>);
       }
     },
-    updateTimer: (state, action) => {
-      const timer = state.timers.find((timer) => timer.id === action.payload);
-      if (timer && timer.isRunning) {
-        timer.remainingTime -= 1;
-        timer.isRunning = timer.remainingTime > 0;
-        setTimer(state.timers as Partial<Timer>);
-      }
+    updateTimer: (state) => {
+      // Updating all the timer those have isRunning true
+      state.timers.forEach((timer) => {
+        if (timer.isRunning) {
+          timer.remainingTime -= 1;
+          timer.isRunning = timer.remainingTime > 0;
+          setTimer(state.timers as Partial<Timer>);
+        }
+      });
     },
     restartTimer: (state, action) => {
       const timer = state.timers.find((timer) => timer.id === action.payload);
@@ -93,7 +95,7 @@ export const useTimerStore = () => {
       dispatch(addTimer(timer)),
     deleteTimer: (id: string) => dispatch(deleteTimer(id)),
     toggleTimer: (id: string) => dispatch(toggleTimer(id)),
-    updateTimer: (id: string) => dispatch(updateTimer(id)),
+    updateTimer: () => dispatch(updateTimer()),
     restartTimer: (id: string) => dispatch(restartTimer(id)),
     editTimer: (id: string, updates: Partial<Timer>) =>
       dispatch(editTimer({ id, updates })),
