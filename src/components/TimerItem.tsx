@@ -29,13 +29,16 @@ export const TimerItem: React.FC<TimerItemProps> = ({ timer }) => {
         if (timer.remainingTime <= 1 && !hasEndedRef.current) {
           hasEndedRef.current = true;
           timerAudio.play().catch(console.error);
+          const isMobile = window.innerWidth < 640;
 
           toast.success(`Timer "${timer.title}" has ended!`, {
+            position: isMobile ? "bottom-center" : "top-right",
             duration: 5000,
             action: {
               label: "Dismiss",
-              onClick: timerAudio.stop,
+              onClick: () => timerAudio.stop(),
             },
+            onAutoClose: () => timerAudio.stop(),
           });
         }
       }, 1000);
