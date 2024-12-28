@@ -1,16 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X, Clock } from "lucide-react";
 import { useTimerStore } from "../store/useTimerStore";
 import { validateTimerForm } from "../utils/validation";
+import { Timer } from "../types/timer";
 
 interface AddTimerModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const AddTimerModal: React.FC<AddTimerModalProps> = ({
+// If passing isEdit true then the timer prop should be passed
+type EditTimerModalProps =
+  | {
+      isEdit: true;
+      timer: Timer;
+    }
+  | {
+      isEdit: false;
+      timer?: never;
+    };
+
+type ModalProps = AddTimerModalProps & EditTimerModalProps;
+
+export const AddCumEditTimerModal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
+  isEdit,
+  timer,
 }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -24,7 +40,24 @@ export const AddTimerModal: React.FC<AddTimerModalProps> = ({
     seconds: false,
   });
 
-  const { addTimer } = useTimerStore();
+  const { addTimer, editTimer } = useTimerStore();
+
+  // Setting up the existed data for editing
+  useEffect(() => {
+    if (isOpen && isEdit) {
+      setTitle(timer.title);
+      setDescription(timer.description);
+      setHours(timer.hours);
+      setMinutes(timer.minutes);
+      setSeconds(timer.seconds);
+      setTouched({
+        title: false,
+        hours: false,
+        minutes: false,
+        seconds: false,
+      });
+    }
+  }, [isOpen, timer, isEdit]);
 
   if (!isOpen) return null;
 
@@ -37,13 +70,28 @@ export const AddTimerModal: React.FC<AddTimerModalProps> = ({
 
     const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
-    addTimer({
-      title: title.trim(),
-      description: description.trim(),
-      duration: totalSeconds,
-      remainingTime: totalSeconds,
-      isRunning: false,
-    });
+    // If opened the modal for edit triggering the edit time action
+    if (isEdit) {
+      editTimer(timer.id, {
+        title: title.trim(),
+        description: description.trim(),
+        duration: totalSeconds,
+        hours,
+        minutes,
+        seconds,
+      });
+    } else {
+      addTimer({
+        title: title.trim(),
+        description: description.trim(),
+        duration: totalSeconds,
+        hours, // useful for edit
+        minutes, // useful for edit
+        seconds, // useful for edit
+        remainingTime: totalSeconds,
+        isRunning: false,
+      });
+    }
 
     onClose();
     setTitle("");
@@ -78,7 +126,9 @@ export const AddTimerModal: React.FC<AddTimerModalProps> = ({
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-blue-600" />
-            <h2 className="text-xl font-semibold">Add New Timer</h2>
+            <h2 className="text-xl font-semibold">
+              {isEdit ? "Edit Timer" : "Add New Timer"}
+            </h2>
           </div>
           <button
             onClick={handleClose}
@@ -204,7 +254,7 @@ export const AddTimerModal: React.FC<AddTimerModalProps> = ({
               type="submit"
               className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700`}
             >
-              Add Timer
+              {isEdit ? "Save Changes" : "Add Timer"}
             </button>
           </div>
         </form>
