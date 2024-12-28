@@ -183,9 +183,8 @@ export const AddTimerModal: React.FC<AddTimerModalProps> = ({
                 />
               </div>
             </div>
-            {touched.hours &&
-              touched.minutes &&
-              touched.seconds &&
+            {/* Showing this error on touch any one of the time field. So that it explain clearly. */}
+            {(touched.hours || touched.minutes || touched.seconds) &&
               !isTimeValid && (
                 <p className="mt-2 text-sm text-red-500">
                   Please set a duration greater than 0
@@ -203,12 +202,7 @@ export const AddTimerModal: React.FC<AddTimerModalProps> = ({
             </button>
             <button
               type="submit"
-              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${
-                isTitleValid && isTimeValid
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-blue-400 cursor-not-allowed"
-              }`}
-              disabled={!isTitleValid || !isTimeValid}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors bg-blue-600 hover:bg-blue-700`}
             >
               Add Timer
             </button>
